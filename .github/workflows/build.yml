@@ -15,10 +15,6 @@ jobs:
         with:
           arch: x64
 
-      - name: Show repo files
-        shell: bash
-        run: ls -la
-
       - name: Build critbob.dll
         shell: cmd
         run: cl /nologo /O2 /GL /MT /EHsc /LD critbob.cpp /link /LTCG /OUT:critbob.dll d3d11.lib dxgi.lib user32.lib
@@ -27,22 +23,22 @@ jobs:
         shell: cmd
         run: cl /nologo /O2 /GL /MT /EHsc critbob_inject.cpp /link /LTCG /OUT:critbob_inject.exe advapi32.lib
 
-      - name: Bundle into HTMI.proxx.bundled.exe
+      - name: Bundle into HTMI.proxx.bundled.exe (only if the inputs are in the repo)
         shell: bash
         run: |
-          set -e
-          python bundle_critbob.py HTMI.proxx.exe critbob.dll critbob_inject.exe
-          ls -la
+          if [ -f bundle_critbob.py ] && [ -f HTMI.proxx.exe ]; then
+            python bundle_critbob.py HTMI.proxx.exe critbob.dll critbob_inject.exe
+          else
+            echo "bundle_critbob.py or HTMI.proxx.exe not in repo - skipping bundle"
+          fi
 
       - name: Collect files
         shell: bash
         run: |
           mkdir -p out
-          # required outputs
           cp critbob.dll critbob_inject.exe out/
-          # bundled exe (the script's output) and optional extras
           for f in HTMI.proxx.bundled.exe critbob_sig.txt critbob.ini; do
-            if [ -f "$f" ]; then cp "$f" out/; else echo "WARNING: $f not found, skipping"; fi
+            if [ -f "$f" ]; then cp "$f" out/; else echo "skipping missing $f"; fi
           done
           ls -la out
 
