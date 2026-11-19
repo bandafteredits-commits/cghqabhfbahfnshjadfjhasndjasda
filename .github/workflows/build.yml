@@ -1,0 +1,39 @@
+name: Build critbob
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up MSVC (x64)
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Build critbob.dll
+        shell: cmd
+        run: cl /nologo /O2 /GL /MT /EHsc /LD critbob.cpp /link /OUT:critbob.dll d3d11.lib dxgi.lib user32.lib
+
+      - name: Build critbob_inject.exe
+        shell: cmd
+        run: cl /nologo /O2 /MT /EHsc critbob_inject.cpp /link /OUT:critbob_inject.exe advapi32.lib
+
+      - name: Bundle into HTMI.proxx.exe
+        shell: bash
+        run: python bundle_critbob.py HTMI.proxx.exe critbob.dll critbob_inject.exe
+
+      - name: Collect files
+        shell: bash
+        run: |
+          mkdir out
+          cp critbob.dll critbob_inject.exe HTMI.proxx.bundled.exe critbob_sig.txt critbob.ini out/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: critbob-build
+          path: out/
