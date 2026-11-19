@@ -1,0 +1,11 @@
+# critbob_sig.txt - put this next to critbob.cfg in C:\Users\Public\CheesyProxxy\
+# Lines starting with # are ignored. Four lines, in this order:
+#  1) byte signature from the START of the first-person held-item transform function (?? = wildcard), unique in the exe
+#  2) stolen bytes: 14..32, must end on an instruction boundary and contain no rip-relative instruction
+#  3) index (0-3) of the argument that is the 4x4 float matrix (rcx=0, rdx=1, r8=2, r9=3)
+#  4) pre or post  (apply the bob before or after the original function builds the matrix; default post)
+# Example (FAKE - replace with the real values for your Bedrock build):
+# 48 89 5C 24 ? 57 48 83 EC 30 48 8B FA 48 8B D9 E8
+# 16
+# 2
+# post
